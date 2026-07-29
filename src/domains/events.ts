@@ -2,6 +2,23 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { DomainHandler, DomainHandlerExtra, CallToolResult } from '../utils/types.js';
 import { getClient } from '../utils/client.js';
 import { ok, emptyGuard } from '../utils/results.js';
+import { compactEventsResponse } from '../utils/compact.js';
+
+const VERBOSE_PARAM = {
+  type: 'boolean',
+  description:
+    'Return full raw event records (large). Default false: events are compacted to triage-relevant fields.',
+} as const;
+
+/**
+ * Guard against empty results, then reduce per-event records to triage fields
+ * unless the caller asked for the full raw payload with verbose: true.
+ */
+function eventListResult(data: unknown, verbose: unknown): CallToolResult {
+  const guarded = emptyGuard(data, 'events');
+  if (verbose === true || guarded.isError) return guarded;
+  return ok(compactEventsResponse(data));
+}
 
 function getTools(): Tool[] {
   return [
@@ -9,7 +26,8 @@ function getTools(): Tool[] {
       name: 'saas_alerts_events_query',
       description:
         'Query security events from SaaS Alerts with optional filters. ' +
-        'Returns a paginated list of events matching the specified criteria.',
+        'Returns a paginated list of events matching the specified criteria. ' +
+        'Events are compacted to triage-relevant fields by default; pass verbose: true for full raw records.',
       annotations: {
         title: 'Query security events',
         readOnlyHint: true,
@@ -41,6 +59,7 @@ function getTools(): Tool[] {
             enum: ['asc', 'desc'],
             description: 'Sort direction on event timestamp',
           },
+          verbose: VERBOSE_PARAM,
         },
       },
     },
@@ -77,7 +96,8 @@ function getTools(): Tool[] {
       name: 'saas_alerts_events_query_advanced',
       description:
         'Execute an advanced Elasticsearch query against the SaaS Alerts events index. ' +
-        'Accepts a raw Elasticsearch query body for maximum flexibility.',
+        'Accepts a raw Elasticsearch query body for maximum flexibility. ' +
+        'Event hits are compacted to triage-relevant fields by default; pass verbose: true for full raw records.',
       annotations: {
         title: 'Advanced Elasticsearch event query',
         readOnlyHint: true,
@@ -92,6 +112,7 @@ function getTools(): Tool[] {
             type: 'object',
             description: 'Elasticsearch query body (e.g. { "query": { "term": { "alertStatus": "critical" } } })',
           },
+          verbose: VERBOSE_PARAM,
         },
         required: ['query'],
       },
@@ -122,7 +143,8 @@ function getTools(): Tool[] {
       name: 'saas_alerts_events_scroll',
       description:
         'Continue paginating through a previous event query result set using a scroll ID. ' +
-        'Call after saas_alerts_events_query_advanced returns a scroll ID.',
+        'Call after saas_alerts_events_query_advanced returns a scroll ID. ' +
+        'Event hits are compacted to triage-relevant fields by default; pass verbose: true for full raw records.',
       annotations: {
         title: 'Scroll through event results',
         readOnlyHint: true,
@@ -134,6 +156,7 @@ function getTools(): Tool[] {
         type: 'object',
         properties: {
           scroll_id: { type: 'string', description: 'Scroll ID returned by a previous query' },
+          verbose: VERBOSE_PARAM,
         },
         required: ['scroll_id'],
       },
@@ -179,7 +202,7 @@ async function handleCall(
       if (args.time_sort) opts.timeSort = args.time_sort;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = await client.events.query(opts as any);
-      return emptyGuard(data, 'events');
+      return eventListResult(data, args.verbose);
     }
 
     case 'saas_alerts_events_count': {
@@ -196,7 +219,7 @@ async function handleCall(
 
     case 'saas_alerts_events_query_advanced': {
       const data = await client.events.queryAdvanced({ query: args.query as Record<string, unknown> });
-      return emptyGuard(data, 'events');
+      return eventListResult(data, args.verbose);
     }
 
     case 'saas_alerts_events_count_advanced': {
@@ -206,7 +229,7 @@ async function handleCall(
 
     case 'saas_alerts_events_scroll': {
       const data = await client.events.scroll(args.scroll_id as string);
-      return emptyGuard(data, 'events');
+      return eventListResult(data, args.verbose);
     }
 
     case 'saas_alerts_recommended_actions': {
