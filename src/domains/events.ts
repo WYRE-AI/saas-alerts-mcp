@@ -27,7 +27,9 @@ function getTools(): Tool[] {
       description:
         'Query security events from SaaS Alerts with optional filters. ' +
         'Returns a paginated list of events matching the specified criteria. ' +
-        'Events are compacted to triage-relevant fields by default; pass verbose: true for full raw records.',
+        'Events are compacted to triage-relevant fields by default; pass verbose: true for full raw records. ' +
+        'Compact responses are capped at ~40,000 characters — over-cap result sets are truncated to the ' +
+        'first events that fit, so prefer a modest size with from/size pagination or a narrower date range.',
       annotations: {
         title: 'Query security events',
         readOnlyHint: true,
@@ -97,7 +99,10 @@ function getTools(): Tool[] {
       description:
         'Execute an advanced Elasticsearch query against the SaaS Alerts events index. ' +
         'Accepts a raw Elasticsearch query body for maximum flexibility. ' +
-        'Event hits are compacted to triage-relevant fields by default; pass verbose: true for full raw records.',
+        'Event hits are compacted to triage-relevant fields by default; pass verbose: true for full raw records. ' +
+        'Compact responses are capped at ~40,000 characters — over-cap hit lists are truncated to the ' +
+        'first hits that fit (hits.total still reports the true match count), so prefer a modest size ' +
+        'with from/size in the query body.',
       annotations: {
         title: 'Advanced Elasticsearch event query',
         readOnlyHint: true,
@@ -144,7 +149,10 @@ function getTools(): Tool[] {
       description:
         'Continue paginating through a previous event query result set using a scroll ID. ' +
         'Call after saas_alerts_events_query_advanced returns a scroll ID. ' +
-        'Event hits are compacted to triage-relevant fields by default; pass verbose: true for full raw records.',
+        'Event hits are compacted to triage-relevant fields by default; pass verbose: true for full raw records. ' +
+        'Compact responses are capped at ~40,000 characters — if a scroll page exceeds the cap it is ' +
+        'truncated, and the trimmed events canNOT be recovered by continuing the scroll (the server ' +
+        'cursor has already advanced past them); re-run the originating query with a smaller size instead.',
       annotations: {
         title: 'Scroll through event results',
         readOnlyHint: true,

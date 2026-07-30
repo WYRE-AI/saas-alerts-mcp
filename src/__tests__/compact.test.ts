@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { compactEvent, compactEventsResponse } from '../utils/compact.js';
+import {
+  compactEvent,
+  compactEventsResponse,
+  COMPACT_NOTE,
+  MAX_COMPACT_RESPONSE_CHARS,
+} from '../utils/compact.js';
 
 const mockClient = {
   events: {
@@ -239,6 +244,133 @@ describe('compactEventsResponse', () => {
     expect(compactEventsResponse(envelope)).toBe(envelope);
     const weird = { rows: [1, 2, 3] };
     expect(compactEventsResponse(weird)).toBe(weird);
+  });
+});
+
+// ---- response byte budget ----
+
+/** N distinct full events (stable ids so truncation order is checkable). */
+function fullEvents(n: number): Record<string, unknown>[] {
+  return Array.from({ length: n }, (_, i) => ({
+    ...fullEvent(),
+    _id: `id-${String(i).padStart(4, '0')}`,
+    eventId: `evt-${String(i).padStart(4, '0')}`,
+  }));
+}
+
+describe('compact response byte budget', () => {
+  it('exposes a 40,000-character budget constant', () => {
+    expect(MAX_COMPACT_RESPONSE_CHARS).toBe(40_000);
+  });
+
+  it('leaves an under-budget response untruncated with no size-cap note', () => {
+    const out = compactEventsResponse(fullEvents(2)) as Record<string, unknown>;
+    expect(out.events as unknown[]).toHaveLength(2);
+    expect(out.note).toBe(COMPACT_NOTE);
+    expect(out.note).not.toContain('size cap');
+  });
+
+  it('truncates an over-budget bare array to the first K events that fit', () => {
+    const out = compactEventsResponse(fullEvents(200)) as Record<string, unknown>;
+    const events = out.events as Record<string, unknown>[];
+
+    expect(JSON.stringify(out, null, 2).length).toBeLessThanOrEqual(MAX_COMPACT_RESPONSE_CHARS);
+    expect(events.length).toBeLessThan(200);
+    // guards against a degenerate "keep 1" implementation — ~700 B/event should fit dozens
+    expect(events.length).toBeGreaterThan(20);
+    // response order preserved: the first K events, in order
+    events.forEach((e, i) => expect(e.eventId).toBe(`evt-${String(i).padStart(4, '0')}`));
+
+    expect(out.note).toContain(`Showing ${events.length} of 200 events`);
+    expect(out.note).toContain('response size cap');
+    expect(out.note).toContain('from/size');
+  });
+
+  it('truncates an over-budget ES envelope, leaving all envelope metadata untouched', () => {
+    const envelope = esEnvelope(fullEvents(200));
+    const out = compactEventsResponse(envelope) as Record<string, unknown>;
+
+    expect(JSON.stringify(out, null, 2).length).toBeLessThanOrEqual(MAX_COMPACT_RESPONSE_CHARS);
+
+    // envelope metadata intact — hits.total keeps reporting the true match count
+    expect(out._scroll_id).toBe(envelope._scroll_id);
+    expect(out.took).toBe(4);
+    expect(out._shards).toEqual({ total: 1, successful: 1, skipped: 0, failed: 0 });
+    const hits = out.hits as { total: unknown; max_score: unknown; hits: Record<string, unknown>[] };
+    expect(hits.total).toEqual({ value: 36, relation: 'eq' });
+    expect(hits.max_score).toBeNull();
+
+    // hit list truncated to the first K, in order, with per-hit metadata and compacted _source
+    expect(hits.hits.length).toBeLessThan(200);
+    expect(hits.hits.length).toBeGreaterThan(10);
+    hits.hits.forEach((h, i) => {
+      expect(h._id).toBe(`hit-${i}`);
+      expect((h._source as Record<string, unknown>).eventId).toBe(`evt-${String(i).padStart(4, '0')}`);
+    });
+
+    // this response carries a scroll cursor: trimmed events are NOT retrievable by
+    // continuing the scroll (the server cursor already advanced past them)
+    expect(out.note).toContain(`Showing ${hits.hits.length} of 200 events`);
+    expect(out.note).toContain('response size cap');
+    expect(out.note).toContain('scroll cursor');
+    expect(out.note).toContain('smaller size');
+    expect(out.note).not.toContain('from/size');
+  });
+
+  it('truncates an over-budget flat hits array envelope with from/size guidance (no scroll cursor)', () => {
+    const flat = { total: 200, hits: fullEvents(200) };
+    const out = compactEventsResponse(flat) as Record<string, unknown>;
+    const hits = out.hits as Record<string, unknown>[];
+
+    expect(JSON.stringify(out, null, 2).length).toBeLessThanOrEqual(MAX_COMPACT_RESPONSE_CHARS);
+    expect(out.total).toBe(200);
+    expect(hits.length).toBeLessThan(200);
+    hits.forEach((h, i) => expect(h.eventId).toBe(`evt-${String(i).padStart(4, '0')}`));
+    expect(out.note).toContain(`Showing ${hits.length} of 200 events`);
+    expect(out.note).toContain('from/size');
+    expect(out.note).not.toContain('scroll cursor');
+  });
+
+  it('keeps at least one event even when a single compacted event exceeds the budget', () => {
+    const huge = { ...fullEvent(), jointDescAdditional: 'x'.repeat(2 * MAX_COMPACT_RESPONSE_CHARS) };
+    const out = compactEventsResponse([huge, fullEvent()]) as Record<string, unknown>;
+    const events = out.events as Record<string, unknown>[];
+    expect(events).toHaveLength(1);
+    expect(events[0].jointDescAdditional).toContain('xxx');
+    expect(out.note).toContain('Showing 1 of 2 events');
+  });
+
+  it('verbose: true bypasses the budget entirely — raw payload byte-for-byte', async () => {
+    const { eventsHandler } = await import('../domains/events.js');
+    const raw = fullEvents(200);
+    mockClient.events.query.mockResolvedValueOnce(raw);
+    const res = await eventsHandler.handleCall('saas_alerts_events_query', { verbose: true });
+    expect(res.isError).toBeFalsy();
+    expect(res.content[0].text).toBe(JSON.stringify(raw, null, 2));
+    expect(res.content[0].text.length).toBeGreaterThan(MAX_COMPACT_RESPONSE_CHARS);
+  });
+
+  it('events_query enforces the budget end-to-end through the handler', async () => {
+    const { eventsHandler } = await import('../domains/events.js');
+    mockClient.events.query.mockResolvedValueOnce(fullEvents(200));
+    const res = await eventsHandler.handleCall('saas_alerts_events_query', { size: 200 });
+    expect(res.isError).toBeFalsy();
+    expect(res.content[0].text.length).toBeLessThanOrEqual(MAX_COMPACT_RESPONSE_CHARS);
+    expect(res.content[0].text).toContain('response size cap');
+  });
+
+  it('the three hit-list tool descriptions mention the response size cap', async () => {
+    const { eventsHandler } = await import('../domains/events.js');
+    const byName = Object.fromEntries(eventsHandler.getTools().map(t => [t.name, t]));
+    for (const name of [
+      'saas_alerts_events_query',
+      'saas_alerts_events_query_advanced',
+      'saas_alerts_events_scroll',
+    ]) {
+      expect(byName[name].description, `${name} should mention the cap`).toMatch(/capped at ~40,000/);
+    }
+    // scroll must warn that trimmed events are unreachable by continuing the scroll
+    expect(byName['saas_alerts_events_scroll'].description).toMatch(/smaller size/);
   });
 });
 

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Response byte budget for compact mode: compacted event responses are now
+  capped at `MAX_COMPACT_RESPONSE_CHARS` (40,000 characters as serialized by
+  the MCP layer). Over-budget hit lists keep only the first K events that fit
+  — response order preserved, all envelope metadata (`hits.total`, `_shards`,
+  `_scroll_id`, pagination fields) untouched — and the `note` states how many
+  of the fetched events are shown and how to get the rest. Scroll responses
+  warn that the server-side cursor has already advanced past trimmed events,
+  so the fix is re-querying with a smaller size, not continuing the scroll.
+  Per-event compaction alone could not bound total size: production queries
+  with `size: 200` returned ~199 KB and `size: 500` ~566 KB, breaking client
+  display. `verbose: true` remains a complete bypass (raw, uncapped).
+
 ### Changed
 
 - Added `@vitest/coverage-v8` to `devDependencies` (matching the installed
