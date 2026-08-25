@@ -114,7 +114,7 @@ Identical `VendorConfig` entry in both `vendor-config.ts` files:
 ```
 
 Plus, per repo:
-- `docker-compose.yml` service (`image: ghcr.io/wyre-technology/saas-alerts-mcp:latest`, `AUTH_MODE=gateway`) and gateway `VENDOR_URL_SAAS_ALERTS` env.
+- `docker-compose.yml` service (`image: ghcr.io/wyre-ai/saas-alerts-mcp:latest`, `AUTH_MODE=gateway`) and gateway `VENDOR_URL_SAAS_ALERTS` env.
 - `vendor-config.test.ts` — bump the hardcoded vendor count.
 - **Conduit only:** `scripts/seed-vendor-registry.ts` entry, `azure/vendor-fleet.bicep` + `vendor-fleet.conduit-prod.bicepparam` container definition, and any `canonical-map.json` entry if required by the completeness check.
 
@@ -162,7 +162,7 @@ Independent pieces (SDK vs. plugin docs/skill text) parallelized via subagents.
 - **Container image must exist before Conduit/gateway prod can resolve it.** The
   registry-publish gating (`mcp-registry-publish-gating`) and fleet CI template
   apply; the PRs to gateway/Conduit should not be merged until
-  `ghcr.io/wyre-technology/saas-alerts-mcp` is published.
+  `ghcr.io/wyre-ai/saas-alerts-mcp` is published.
 - **`validate()` endpoint choice** assumes `GET /reports/partners/profile` is a
   cheap authenticated call. Confirm during implementation; fall back to
   `GET /reports/msp-user`.

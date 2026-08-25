@@ -101,9 +101,9 @@ cp ../node-inforcer/.github/dependabot.yml .github/
   "keywords": ["saas-alerts", "kaseya", "api", "msp", "security", "alerts", "m365"],
   "author": "WYRE Technology",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "https://github.com/wyre-technology/node-saas-alerts.git" },
-  "bugs": { "url": "https://github.com/wyre-technology/node-saas-alerts/issues" },
-  "homepage": "https://github.com/wyre-technology/node-saas-alerts#readme",
+  "repository": { "type": "git", "url": "https://github.com/WYRE-AI/node-saas-alerts.git" },
+  "bugs": { "url": "https://github.com/WYRE-AI/node-saas-alerts/issues" },
+  "homepage": "https://github.com/WYRE-AI/node-saas-alerts#readme",
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",

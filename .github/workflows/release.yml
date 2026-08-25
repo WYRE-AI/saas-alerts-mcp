@@ -8,7 +8,7 @@ on:
 
 # Thin caller for the canonical reusable release pipeline (build →
 # semantic-release → Docker → MCP Registry → security). Lives in
-# wyre-technology/.github so every *-mcp repo stays in lockstep.
+# WYRE-AI/.github so every *-mcp repo stays in lockstep.
 jobs:
   release:
     permissions:
@@ -18,10 +18,10 @@ jobs:
       packages: write
       id-token: write
       security-events: write
-    uses: wyre-technology/.github/.github/workflows/mcp-server-release.yml@8bfc9b3a249fd1e6f69f1d05c45c8eaf3076fec3
+    uses: WYRE-AI/.github/.github/workflows/mcp-server-release.yml@07bc1921cbd01ad8a079fe8a3dd28180080870d5
     with:
       server-name: saas-alerts-mcp
-      image-name: ghcr.io/wyre-technology/saas-alerts-mcp
+      image-name: ghcr.io/wyre-ai/saas-alerts-mcp
     secrets: inherit
 
   # NOTE: the prod deploy job is intentionally deferred. The canonical pipeline
@@ -37,10 +37,10 @@ jobs:
   #     permissions:
   #       id-token: write
   #       contents: read
-  #     uses: wyre-technology/.github/.github/workflows/mcp-server-deploy.yml@7794e75666ac4956274f7a7d25dabacd56c96bbc
+  #     uses: WYRE-AI/.github/.github/workflows/mcp-server-deploy.yml@07bc1921cbd01ad8a079fe8a3dd28180080870d5
   #     with:
   #       vendor-slug: saas-alerts
-  #       image-name: ghcr.io/wyre-technology/saas-alerts-mcp
+  #       image-name: ghcr.io/wyre-ai/saas-alerts-mcp
   #       digest: ${{ needs.release.outputs.digest }}
   #       version: ${{ needs.release.outputs.version }}
   #     secrets: inherit

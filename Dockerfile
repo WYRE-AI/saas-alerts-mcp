@@ -71,7 +71,7 @@ VOLUME ["/app/logs"]
 CMD ["node", "dist/http.js"]
 
 # Labels for metadata
-LABEL io.modelcontextprotocol.server.name="io.github.wyre-technology/saas-alerts-mcp"
+LABEL io.modelcontextprotocol.server.name="io.github.WYRE-AI/saas-alerts-mcp"
 LABEL maintainer="engineering@wyre.ai"
 LABEL version="${VERSION}"
 LABEL description="SaaS Alerts MCP Server - Model Context Protocol server for Kaseya SaaS Alerts"
@@ -80,8 +80,8 @@ LABEL org.opencontainers.image.description="Model Context Protocol server for Ka
 LABEL org.opencontainers.image.version="${VERSION}"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${COMMIT_SHA}"
-LABEL org.opencontainers.image.source="https://github.com/wyre-technology/saas-alerts-mcp"
-LABEL org.opencontainers.image.documentation="https://github.com/wyre-technology/saas-alerts-mcp/blob/main/README.md"
-LABEL org.opencontainers.image.url="https://github.com/wyre-technology/saas-alerts-mcp/pkgs/container/saas-alerts-mcp"
+LABEL org.opencontainers.image.source="https://github.com/WYRE-AI/saas-alerts-mcp"
+LABEL org.opencontainers.image.documentation="https://github.com/WYRE-AI/saas-alerts-mcp/blob/main/README.md"
+LABEL org.opencontainers.image.url="https://github.com/WYRE-AI/saas-alerts-mcp/pkgs/container/saas-alerts-mcp"
 LABEL org.opencontainers.image.vendor="Wyre Technology"
 LABEL org.opencontainers.image.licenses="Apache-2.0"

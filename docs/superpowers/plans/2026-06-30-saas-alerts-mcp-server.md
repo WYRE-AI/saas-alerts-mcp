@@ -15,7 +15,7 @@
 - **Repo:** `wyre-technology/saas-alerts-mcp`. Local: `/Users/asachs/work/wyre/engineering/projects/mcp/mcp-servers/saas-alerts-mcp` (already `git init`'d; contains `docs/superpowers/`).
 - **SDK dependency:** `@wyre-technology/node-saas-alerts@^1.0.0` (built by the SDK plan; must be published first).
 - **Env var:** `SAAS_ALERTS_API_KEY`. **Gateway-mode header (read from request):** `X-SaaS-Alerts-API-Key` (Node lowercases → `req.headers['x-saas-alerts-api-key']`).
-- **Tool prefix:** `saas_alerts_`. **Server name:** `saas-alerts-mcp`. **MCP registry name:** `io.github.wyre-technology/saas-alerts-mcp`. **Image:** `ghcr.io/wyre-technology/saas-alerts-mcp`. **Deploy vendor-slug:** `saas-alerts`.
+- **Tool prefix:** `saas_alerts_`. **Server name:** `saas-alerts-mcp`. **MCP registry name:** `io.github.WYRE-AI/saas-alerts-mcp`. **Image:** `ghcr.io/wyre-ai/saas-alerts-mcp`. **Deploy vendor-slug:** `saas-alerts`.
 - **Reference template (read-only, copy from):** `inforcer-mcp` at `/Users/asachs/work/wyre/engineering/projects/mcp/mcp-servers/inforcer-mcp`.
 - **Destructive-lint rule:** any tool whose name contains `delete|remove|disable|revoke|reset|offboard|archive` MUST have a description starting with `⚠ DESTRUCTIVE` (or `⚠ HIGH-IMPACT`) AND `annotations.destructiveHint: true`, or `scripts/lint-destructive-warnings.mjs` fails CI.
 
@@ -867,7 +867,7 @@ Run: `npm run lint` → PASS.
 
 **Files:** Create `Dockerfile`, `docker-compose.yml`, `smithery.yaml`, `server.json`, `.github/workflows/{release.yml, test.yml, mcp-assert.yml}`, `README.md`.
 
-- [ ] **Step 1: Copy `Dockerfile` from inforcer-mcp and substitute** — replace `inforcer`→`saas-alerts`/`saasalerts` in the user/group names, all `LABEL` values, `io.github.wyre-technology/saas-alerts-mcp`, and image URLs. Keep the multi-stage build, `--ignore-scripts`, `.npmrc` removal, `EXPOSE 8080`, healthcheck on `/health`, and the `ENV MCP_TRANSPORT=http / MCP_HTTP_PORT=8080 / MCP_HTTP_HOST=0.0.0.0 / AUTH_MODE=env` block, `CMD ["node", "dist/http.js"]`.
+- [ ] **Step 1: Copy `Dockerfile` from inforcer-mcp and substitute** — replace `inforcer`→`saas-alerts`/`saasalerts` in the user/group names, all `LABEL` values, `io.github.WYRE-AI/saas-alerts-mcp`, and image URLs. Keep the multi-stage build, `--ignore-scripts`, `.npmrc` removal, `EXPOSE 8080`, healthcheck on `/health`, and the `ENV MCP_TRANSPORT=http / MCP_HTTP_PORT=8080 / MCP_HTTP_HOST=0.0.0.0 / AUTH_MODE=env` block, `CMD ["node", "dist/http.js"]`.
 
 - [ ] **Step 2: Write `docker-compose.yml`** — copy inforcer-mcp's, replace `inforcer`→`saas-alerts`, and swap the env block to:
 ```yaml
@@ -899,16 +899,16 @@ startCommand:
 ```json
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.wyre-technology/saas-alerts-mcp",
+  "name": "io.github.WYRE-AI/saas-alerts-mcp",
   "title": "SaaS Alerts",
   "description": "MCP server for Kaseya SaaS Alerts — SaaS security monitoring/alerting for M365 & Google Workspace.",
-  "repository": { "url": "https://github.com/wyre-technology/saas-alerts-mcp", "source": "github" },
+  "repository": { "url": "https://github.com/WYRE-AI/saas-alerts-mcp", "source": "github" },
   "version": "0.0.0",
-  "websiteUrl": "https://github.com/wyre-technology/saas-alerts-mcp",
+  "websiteUrl": "https://github.com/WYRE-AI/saas-alerts-mcp",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/wyre-technology/saas-alerts-mcp:0.0.0",
+      "identifier": "ghcr.io/wyre-ai/saas-alerts-mcp:0.0.0",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         { "name": "SAAS_ALERTS_API_KEY", "description": "SaaS Alerts API key (sent as the api_key header). Required.", "isRequired": true, "isSecret": true, "format": "string" },
@@ -923,7 +923,7 @@ startCommand:
 
 - [ ] **Step 5: Write CI workflows** (thin callers to `wyre-technology/.github`, pinned SHAs copied verbatim from inforcer-mcp; substitute names)
 
-`release.yml`: identical to inforcer-mcp's with `server-name: saas-alerts-mcp`, `image-name: ghcr.io/wyre-technology/saas-alerts-mcp`, and the `deploy` job `vendor-slug: saas-alerts`, `image-name: ghcr.io/wyre-technology/saas-alerts-mcp`.
+`release.yml`: identical to inforcer-mcp's with `server-name: saas-alerts-mcp`, `image-name: ghcr.io/wyre-ai/saas-alerts-mcp`, and the `deploy` job `vendor-slug: saas-alerts`, `image-name: ghcr.io/wyre-ai/saas-alerts-mcp`.
 `mcp-assert.yml`: copy inforcer-mcp's with `entry: dist/index.js` and `canary-tool: saas_alerts_users_get_msp`.
 `test.yml`: copy inforcer-mcp's verbatim (it runs lint → `node scripts/lint-destructive-warnings.mjs src` → build → test on Node 18/20/22 + coverage). No substitution beyond any hardcoded name in comments.
 
@@ -947,7 +947,7 @@ Expected: `tools/list` returns all 30 tools; `saas_alerts_status` returns `conne
 git add -A && git commit -m "feat: container, registry metadata, CI, README"
 gh repo create wyre-technology/saas-alerts-mcp --private --source=. --remote=origin --push
 ```
-This triggers `release.yml` → semantic-release publishes `ghcr.io/wyre-technology/saas-alerts-mcp` and the MCP Registry entry. **Record the published image digest** (`docker buildx imagetools inspect ghcr.io/wyre-technology/saas-alerts-mcp:latest`) — the fleet-integration plan needs it for the Conduit bicepparam.
+This triggers `release.yml` → semantic-release publishes `ghcr.io/wyre-ai/saas-alerts-mcp` and the MCP Registry entry. **Record the published image digest** (`docker buildx imagetools inspect ghcr.io/wyre-ai/saas-alerts-mcp:latest`) — the fleet-integration plan needs it for the Conduit bicepparam.
 
 ---
 

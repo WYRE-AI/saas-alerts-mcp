@@ -12,7 +12,7 @@
 
 (See the SDK plan's Global Constraints.) Integration-critical values:
 
-- **Vendor slug:** `saas-alerts`. **Display:** `SaaS Alerts`. **Category:** `security`. **Container:** `http://saas-alerts-mcp` (no port — fleet convention; `VENDOR_URL_SAAS_ALERTS` override adds `:8080` in compose). **Image:** `ghcr.io/wyre-technology/saas-alerts-mcp`.
+- **Vendor slug:** `saas-alerts`. **Display:** `SaaS Alerts`. **Category:** `security`. **Container:** `http://saas-alerts-mcp` (no port — fleet convention; `VENDOR_URL_SAAS_ALERTS` override adds `:8080` in compose). **Image:** `ghcr.io/wyre-ai/saas-alerts-mcp`.
 - **Canonical header (end-to-end, MUST be byte-identical everywhere):** `X-SaaS-Alerts-API-Key`.
 - **`validate()` (gateway & Conduit, identical):** GET `https://us-central1-the-byway-248217.cloudfunctions.net/reportApi/api/v1/reports/partners/profile` with header `api_key: <key>` (NOT Bearer). 401/403 → invalid.
 - **docsUrl:** `https://app.swaggerhub.com/apis/SaaS_Alerts/functions/0.20.0`
@@ -83,7 +83,7 @@ Expected: PASS. (Generic tests enforce: every required field has a header mappin
 - [ ] **Step 2: `docker-compose.yml`** — add the service block (near the other security vendors):
 ```yaml
   saas-alerts-mcp:
-    image: ghcr.io/wyre-technology/saas-alerts-mcp:latest
+    image: ghcr.io/wyre-ai/saas-alerts-mcp:latest
     environment:
       - AUTH_MODE=gateway
       - PORT=8080
@@ -97,7 +97,7 @@ and add to the `gateway` service `environment:` list:
 
 - [ ] **Step 3: `azure/main.bicep`** — add to the `vendors` array (REQUIRED so the prod ACA sidecar deploys — the Liongard "config but no container" failure mode):
 ```bicep
-  { slug: 'saas-alerts', image: 'ghcr.io/wyre-technology/saas-alerts-mcp:latest' }
+  { slug: 'saas-alerts', image: 'ghcr.io/wyre-ai/saas-alerts-mcp:latest' }
 ```
 
 - [ ] **Step 4: `scripts/smoke-test.ts`** — add a read-only canary to `CANARY_TOOLS`:
@@ -114,9 +114,9 @@ and add to the `gateway` service `environment:` list:
 git add -A && git commit -m "feat: register saas-alerts in compose, prod bicep, prompt categories, smoke, drift audit"
 git push -u origin feat/saas-alerts-vendor
 gh pr create --repo wyre-technology/mcp-gateway --title "feat: add SaaS Alerts vendor" \
-  --body "Registers the saas-alerts vendor (security, API-key auth). Container: ghcr.io/wyre-technology/saas-alerts-mcp. Header: X-SaaS-Alerts-API-Key. Do not merge until the image is published. No prod deploy in this PR."
+  --body "Registers the saas-alerts vendor (security, API-key auth). Container: ghcr.io/wyre-ai/saas-alerts-mcp. Header: X-SaaS-Alerts-API-Key. Do not merge until the image is published. No prod deploy in this PR."
 ```
-**Do not merge until** `ghcr.io/wyre-technology/saas-alerts-mcp` is published. Aaron merges & deploys.
+**Do not merge until** `ghcr.io/wyre-ai/saas-alerts-mcp` is published. Aaron merges & deploys.
 
 ---
 
@@ -161,10 +161,10 @@ gh pr create --repo wyre-technology/conduit --title "feat: add SaaS Alerts vendo
 
 - [ ] **Step 4 (BLOCKED on published image): `azure/vendor-fleet.conduit-prod.bicepparam`** — resolve the digest and add:
 ```bash
-docker buildx imagetools inspect ghcr.io/wyre-technology/saas-alerts-mcp:latest   # copy the sha256 digest
+docker buildx imagetools inspect ghcr.io/wyre-ai/saas-alerts-mcp:latest   # copy the sha256 digest
 ```
 ```bicep
-  { slug: 'saas-alerts',  image: 'ghcr.io/wyre-technology/saas-alerts-mcp@sha256:<DIGEST>' }
+  { slug: 'saas-alerts',  image: 'ghcr.io/wyre-ai/saas-alerts-mcp@sha256:<DIGEST>' }
 ```
 Commit to the same branch once unblocked. The bicep template itself is generic — no edit. `vendor-fleet-completeness-check.sh` and `canonical-map.json` need no edit (auto-derived / batch-1 scoped).
 
@@ -201,8 +201,8 @@ Repo: `/Users/asachs/work/wyre/engineering/projects/msp-claude-plugins`. Templat
   "version": "1.0.0",
   "description": "SaaS Alerts - SaaS security monitoring and alerting for M365 / Google Workspace: alerts, events, anomaly detection, and multi-tenant response",
   "author": { "name": "WYRE Technology" },
-  "homepage": "https://github.com/wyre-technology/msp-claude-plugins",
-  "repository": "https://github.com/wyre-technology/msp-claude-plugins",
+  "homepage": "https://github.com/WYRE-AI/msp-claude-plugins",
+  "repository": "https://github.com/WYRE-AI/msp-claude-plugins",
   "license": "Apache-2.0"
 }
 ```
@@ -320,7 +320,7 @@ gh pr create --repo wyre-technology/msp-claude-plugins --title "feat: add SaaS A
 ## Sequencing & gating
 
 1. **A1/A2** (gateway config), **B1/B2 catalog**, and **C** can be authored immediately — they don't need the image.
-2. **Merge gating:** A's PR and B's prod bicepparam (B2 Step 4) must not merge/deploy until `ghcr.io/wyre-technology/saas-alerts-mcp` is published by the MCP-server plan.
+2. **Merge gating:** A's PR and B's prod bicepparam (B2 Step 4) must not merge/deploy until `ghcr.io/wyre-ai/saas-alerts-mcp` is published by the MCP-server plan.
 3. **B3** (tool-classification/result-cache) uses the now-known tool names; ship with B or as a fast follow.
 4. Aaron merges and runs the deploys.
 
@@ -328,4 +328,4 @@ gh pr create --repo wyre-technology/msp-claude-plugins --title "feat: add SaaS A
 
 **Spec coverage:** design §6 (gateway + Conduit vendor entry, compose, prod IaC, tests) → Tasks A1–A2, B1–B2 ✓; design §7 (plugin + `saas-alerts-triage` skill + `saas-alerts-analyst` agent + data-regen) → C1–C2 ✓; "branch + PR, no prod/deploy" → every deliverable ends in a PR, prod steps gated ✓.
 **Placeholder scan:** the only deferred specifics are the digest (B2 S4, genuinely unknowable until publish — flagged) and the exact `tool-classification`/`result-cache` interface (B3 S1 instructs reading the live `rocketcyber` block, since the agents did not capture it verbatim and the modules are dormant) — both honestly bounded, not lazy TODOs. The full read/write classification of every tool IS specified.
-**Type/name consistency:** `X-SaaS-Alerts-API-Key` is byte-identical in A1, B1, and C1 `.mcp.json`; slug `saas-alerts`, container `http://saas-alerts-mcp`, image `ghcr.io/wyre-technology/saas-alerts-mcp`, and canary `saas_alerts_users_get_msp` match the MCP-server plan; the corrected `api_key`-header `validate()` is identical in A and B.
+**Type/name consistency:** `X-SaaS-Alerts-API-Key` is byte-identical in A1, B1, and C1 `.mcp.json`; slug `saas-alerts`, container `http://saas-alerts-mcp`, image `ghcr.io/wyre-ai/saas-alerts-mcp`, and canary `saas_alerts_users_get_msp` match the MCP-server plan; the corrected `api_key`-header `validate()` is identical in A and B.

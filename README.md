@@ -2,7 +2,7 @@
 
 Model Context Protocol server for [Kaseya SaaS Alerts](https://saasalerts.com/) — a SaaS security monitoring platform for M365 and Google Workspace events.
 
-Part of the [WYRE Technology MCP fleet](https://github.com/wyre-technology).
+Part of the [WYRE Technology MCP fleet](https://github.com/WYRE-AI).
 
 ## Features
 
@@ -58,7 +58,7 @@ Or pull from GHCR:
 docker run -e SAAS_ALERTS_API_KEY=your-key \
   -e MCP_TRANSPORT=http \
   -p 8080:8080 \
-  ghcr.io/wyre-technology/saas-alerts-mcp:latest
+  ghcr.io/wyre-ai/saas-alerts-mcp:latest
 ```
 
 ## Development
