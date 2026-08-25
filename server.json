@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.wyre-technology/saas-alerts-mcp",
+  "name": "io.github.WYRE-AI/saas-alerts-mcp",
   "title": "SaaS Alerts",
   "description": "MCP server for Kaseya SaaS Alerts — SaaS security monitoring for M365 & Google Workspace.",
   "repository": {
-    "url": "https://github.com/wyre-technology/saas-alerts-mcp",
+    "url": "https://github.com/WYRE-AI/saas-alerts-mcp",
     "source": "github"
   },
   "version": "0.0.0",
-  "websiteUrl": "https://github.com/wyre-technology/saas-alerts-mcp",
+  "websiteUrl": "https://github.com/WYRE-AI/saas-alerts-mcp",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/wyre-technology/saas-alerts-mcp:0.0.0",
+      "identifier": "ghcr.io/wyre-ai/saas-alerts-mcp:0.0.0",
       "transport": {
         "type": "stdio"
       },
