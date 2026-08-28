@@ -58,7 +58,7 @@ export function createServer(): Server {
         return {
           content: [{
             type: 'text' as const,
-            text: JSON.stringify({ connected: true, mspUser: me, domains: DOMAINS, status: 'Connected. All tools available.' }, null, 2),
+            text: JSON.stringify({ connected: true, mspUser: me, domains: DOMAINS, status: 'Connected. Call conduit__my_access to see which tools you can use under the gateway, or saas_alerts_navigate to browse tools by domain when running standalone.' }, null, 2),
           }],
         };
       } catch (error) {
@@ -89,7 +89,7 @@ export function createServer(): Server {
     }
 
     return {
-      content: [{ type: 'text' as const, text: `Unknown tool: ${name}. Use saas_alerts_navigate to discover available tools.` }],
+      content: [{ type: 'text' as const, text: `Unknown tool: ${name}. Call conduit__my_access to see which tools you can use under the gateway, or saas_alerts_navigate to browse available tools when running standalone.` }],
       isError: true,
     };
   });
