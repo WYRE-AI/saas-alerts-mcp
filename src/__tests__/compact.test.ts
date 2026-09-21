@@ -419,7 +419,7 @@ describe('events handler compact/verbose mode', () => {
     const res = await eventsHandler.handleCall('saas_alerts_events_query_advanced', {
       query: { match_all: {} },
     });
-    expect(mockClient.events.queryAdvanced).toHaveBeenCalledWith({ query: { match_all: {} } });
+    expect(mockClient.events.queryAdvanced).toHaveBeenCalledWith({ body: { match_all: {} } });
     expect(res.content[0].text).toContain('_scroll_id');
     expect(res.content[0].text).not.toContain('ipInfo');
 
@@ -428,7 +428,7 @@ describe('events handler compact/verbose mode', () => {
       query: { match_all: {} },
       verbose: true,
     });
-    expect(mockClient.events.queryAdvanced).toHaveBeenLastCalledWith({ query: { match_all: {} } });
+    expect(mockClient.events.queryAdvanced).toHaveBeenLastCalledWith({ body: { match_all: {} } });
     expect(verboseRes.content[0].text).toContain('ipInfo');
   });
 

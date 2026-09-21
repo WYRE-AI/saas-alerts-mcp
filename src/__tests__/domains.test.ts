@@ -84,20 +84,49 @@ describe('events domain', () => {
     );
   });
 
-  it('events_query_advanced wraps query in body object', async () => {
+  it('events_query_advanced posts the search request under body, not a bare query', async () => {
     const { eventsHandler } = await import('../domains/events.js');
-    const esQuery = { term: { alertStatus: 'critical' } };
+    // Customer shape: login-failure filter on user.name plus an IP terms agg.
+    // The SDK forwards this object as the POST /reports/events/query JSON body.
+    const esSearch = {
+      size: 0,
+      query: {
+        bool: {
+          filter: [
+            { term: { 'user.name': 'user@example.com' } },
+            { term: { jointType: 'login.failure' } },
+          ],
+        },
+      },
+      aggs: { ips: { terms: { field: 'ip', size: 25 } } },
+    };
     mockClient.events.queryAdvanced.mockResolvedValueOnce([{ id: 'e4' }]);
-    await eventsHandler.handleCall('saas_alerts_events_query_advanced', { query: esQuery });
-    expect(mockClient.events.queryAdvanced).toHaveBeenCalledWith({ query: esQuery });
+    await eventsHandler.handleCall('saas_alerts_events_query_advanced', { query: esSearch });
+    const payload = mockClient.events.queryAdvanced.mock.calls[0][0];
+    expect(payload).toEqual({ body: esSearch });
+    expect(payload).toHaveProperty('body');
+    expect(payload).not.toHaveProperty('query');
+    expect(payload.body.query.bool.filter).toEqual(esSearch.query.bool.filter);
   });
 
-  it('events_count_advanced wraps query in body object', async () => {
+  it('events_count_advanced posts the search request under body, not a bare query', async () => {
     const { eventsHandler } = await import('../domains/events.js');
-    const esQuery = { match_all: {} };
+    const esSearch = {
+      query: {
+        bool: {
+          filter: [
+            { term: { 'user.name': 'user@example.com' } },
+            { term: { jointType: 'login.failure' } },
+          ],
+        },
+      },
+    };
     mockClient.events.countAdvanced.mockResolvedValueOnce({ count: 7 });
-    await eventsHandler.handleCall('saas_alerts_events_count_advanced', { query: esQuery });
-    expect(mockClient.events.countAdvanced).toHaveBeenCalledWith({ query: esQuery });
+    await eventsHandler.handleCall('saas_alerts_events_count_advanced', { query: esSearch });
+    const payload = mockClient.events.countAdvanced.mock.calls[0][0];
+    expect(payload).toEqual({ body: esSearch });
+    expect(payload).toHaveProperty('body');
+    expect(payload).not.toHaveProperty('query');
   });
 
   it('events_query empty result is flagged isError', async () => {

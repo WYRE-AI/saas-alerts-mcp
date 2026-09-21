@@ -115,7 +115,11 @@ function getTools(): Tool[] {
         properties: {
           query: {
             type: 'object',
-            description: 'Elasticsearch query body (e.g. { "query": { "term": { "alertStatus": "critical" } } })',
+            description:
+              'Elasticsearch search request sent as the required `body` field of POST /reports/events/query. ' +
+              'Must include `query`. May include size, from, sort, aggs, and _source. ' +
+              'Do not wrap this object in `body` or `query` — the server adds the `body` envelope. ' +
+              'Example: { "size": 0, "query": { "bool": { "filter": [ { "term": { "user.name": "user@example.com" } }, { "term": { "jointType": "login.failure" } } ] } }, "aggs": { "ips": { "terms": { "field": "ip", "size": 25 } } } }',
           },
           verbose: VERBOSE_PARAM,
         },
@@ -138,7 +142,9 @@ function getTools(): Tool[] {
         properties: {
           query: {
             type: 'object',
-            description: 'Elasticsearch query body',
+            description:
+              'Elasticsearch search request sent as the required `body` field of POST /reports/events/count/query. ' +
+              'Must include `query`. Do not wrap this object in `body` or `query`.',
           },
         },
         required: ['query'],
@@ -189,6 +195,17 @@ function getTools(): Tool[] {
   ];
 }
 
+/**
+ * `POST /reports/events/query` and `POST /reports/events/count/query` take
+ * IElasticRawParams (External Partner API 0.20.0). `body` is required and
+ * holds the Elasticsearch search request (`query` required inside it, plus
+ * optional size, aggs, sort, from, _source). The SDK posts this object as
+ * the JSON body unchanged.
+ */
+function elasticRawParams(search: unknown): Record<string, unknown> {
+  return { body: search };
+}
+
 async function handleCall(
   name: string,
   args: Record<string, unknown>,
@@ -226,12 +243,12 @@ async function handleCall(
     }
 
     case 'saas_alerts_events_query_advanced': {
-      const data = await client.events.queryAdvanced({ query: args.query as Record<string, unknown> });
+      const data = await client.events.queryAdvanced(elasticRawParams(args.query));
       return eventListResult(data, args.verbose);
     }
 
     case 'saas_alerts_events_count_advanced': {
-      const data = await client.events.countAdvanced({ query: args.query as Record<string, unknown> });
+      const data = await client.events.countAdvanced(elasticRawParams(args.query));
       return ok(data);
     }
 
