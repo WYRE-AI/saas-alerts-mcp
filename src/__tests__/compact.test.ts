@@ -417,18 +417,18 @@ describe('events handler compact/verbose mode', () => {
     const envelope = esEnvelope([fullEvent()]);
     mockClient.events.queryAdvanced.mockResolvedValueOnce(envelope);
     const res = await eventsHandler.handleCall('saas_alerts_events_query_advanced', {
-      query: { match_all: {} },
+      query: { query: { match_all: {} } },
     });
-    expect(mockClient.events.queryAdvanced).toHaveBeenCalledWith({ body: { match_all: {} } });
+    expect(mockClient.events.queryAdvanced).toHaveBeenCalledWith({ body: { query: { match_all: {} } } });
     expect(res.content[0].text).toContain('_scroll_id');
     expect(res.content[0].text).not.toContain('ipInfo');
 
     mockClient.events.queryAdvanced.mockResolvedValueOnce(esEnvelope([fullEvent()]));
     const verboseRes = await eventsHandler.handleCall('saas_alerts_events_query_advanced', {
-      query: { match_all: {} },
+      query: { query: { match_all: {} } },
       verbose: true,
     });
-    expect(mockClient.events.queryAdvanced).toHaveBeenLastCalledWith({ body: { match_all: {} } });
+    expect(mockClient.events.queryAdvanced).toHaveBeenLastCalledWith({ body: { query: { match_all: {} } } });
     expect(verboseRes.content[0].text).toContain('ipInfo');
   });
 
