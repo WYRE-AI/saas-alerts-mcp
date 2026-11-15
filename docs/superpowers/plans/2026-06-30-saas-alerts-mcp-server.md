@@ -12,7 +12,7 @@
 
 (See the SDK plan's Global Constraints — all apply. Repeated key items below.)
 
-- **Repo:** `wyre-technology/saas-alerts-mcp`. Local: `/Users/asachs/work/wyre/engineering/projects/mcp/mcp-servers/saas-alerts-mcp` (already `git init`'d; contains `docs/superpowers/`).
+- **Repo:** `WYRE-AI/saas-alerts-mcp`. Local: `/Users/asachs/work/wyre/engineering/projects/mcp/mcp-servers/saas-alerts-mcp` (already `git init`'d; contains `docs/superpowers/`).
 - **SDK dependency:** `@wyre-technology/node-saas-alerts@^1.0.0` (built by the SDK plan; must be published first).
 - **Env var:** `SAAS_ALERTS_API_KEY`. **Gateway-mode header (read from request):** `X-SaaS-Alerts-API-Key` (Node lowercases → `req.headers['x-saas-alerts-api-key']`).
 - **Tool prefix:** `saas_alerts_`. **Server name:** `saas-alerts-mcp`. **MCP registry name:** `io.github.WYRE-AI/saas-alerts-mcp`. **Image:** `ghcr.io/wyre-ai/saas-alerts-mcp`. **Deploy vendor-slug:** `saas-alerts`.
@@ -945,7 +945,7 @@ Expected: `tools/list` returns all 30 tools; `saas_alerts_status` returns `conne
 
 ```bash
 git add -A && git commit -m "feat: container, registry metadata, CI, README"
-gh repo create wyre-technology/saas-alerts-mcp --private --source=. --remote=origin --push
+gh repo create WYRE-AI/saas-alerts-mcp --private --source=. --remote=origin --push
 ```
 This triggers `release.yml` → semantic-release publishes `ghcr.io/wyre-ai/saas-alerts-mcp` and the MCP Registry entry. **Record the published image digest** (`docker buildx imagetools inspect ghcr.io/wyre-ai/saas-alerts-mcp:latest`) — the fleet-integration plan needs it for the Conduit bicepparam.
 
