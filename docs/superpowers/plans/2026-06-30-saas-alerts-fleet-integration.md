@@ -113,7 +113,7 @@ and add to the `gateway` service `environment:` list:
 ```bash
 git add -A && git commit -m "feat: register saas-alerts in compose, prod bicep, prompt categories, smoke, drift audit"
 git push -u origin feat/saas-alerts-vendor
-gh pr create --repo wyre-technology/mcp-gateway --title "feat: add SaaS Alerts vendor" \
+gh pr create --repo WYRE-AI/mcp-gateway --title "feat: add SaaS Alerts vendor" \
   --body "Registers the saas-alerts vendor (security, API-key auth). Container: ghcr.io/wyre-ai/saas-alerts-mcp. Header: X-SaaS-Alerts-API-Key. Do not merge until the image is published. No prod deploy in this PR."
 ```
 **Do not merge until** `ghcr.io/wyre-ai/saas-alerts-mcp` is published. Aaron merges & deploys.
@@ -155,7 +155,7 @@ Run: `npm test` → PASS.
 ```bash
 git add -A && git commit -m "feat: saas-alerts compose service + docs"
 git push -u origin feat/saas-alerts-vendor
-gh pr create --repo wyre-technology/conduit --title "feat: add SaaS Alerts vendor" \
+gh pr create --repo WYRE-AI/conduit --title "feat: add SaaS Alerts vendor" \
   --body "Catalog wiring for saas-alerts (vendor-config + batch-1 classification + compose + docs). Prod bicepparam (digest-pinned) and tool-classification/result-cache maps follow once the image is published. No deploy here."
 ```
 
@@ -311,7 +311,7 @@ git add .claude-plugin/marketplace.json \
         msp-claude-plugins/docs/scripts/generate-plugins.ts
 git commit -m "feat(saas-alerts): register plugin in marketplace + regen docs data"
 git push -u origin feat/saas-alerts-plugin
-gh pr create --repo wyre-technology/msp-claude-plugins --title "feat: add SaaS Alerts plugin, triage skill, analyst agent" \
+gh pr create --repo WYRE-AI/msp-claude-plugins --title "feat: add SaaS Alerts plugin, triage skill, analyst agent" \
   --body "Adds the saas-alerts plugin (security), api-patterns + triage skills, and the saas-alerts-analyst agent. Marketplace + regenerated plugins.ts included. .mcp.json header X-SaaS-Alerts-API-Key matches the gateway vendor-config."
 ```
 

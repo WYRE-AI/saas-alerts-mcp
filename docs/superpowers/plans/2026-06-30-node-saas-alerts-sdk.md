@@ -12,7 +12,7 @@
 
 These apply to **all three** SaaS Alerts plans (SDK / MCP server / integration). Copy values verbatim.
 
-- **Package name:** `@wyre-technology/node-saas-alerts`. **Repo:** `wyre-technology/node-saas-alerts`. Local path: `/Users/asachs/work/wyre/engineering/projects/mcp/mcp-servers/node-saas-alerts`.
+- **Package name:** `@wyre-technology/node-saas-alerts`. **Repo:** `WYRE-AI/node-saas-alerts`. Local path: `/Users/asachs/work/wyre/engineering/projects/mcp/mcp-servers/node-saas-alerts`.
 - **Vendor slug (fleet-wide):** `saas-alerts`. **Display name:** `SaaS Alerts`. **Category:** `security`.
 - **API base URL (prod):** `https://us-central1-the-byway-248217.cloudfunctions.net/reportApi/api/v1`
 - **API auth header:** `api_key` (literal, lowercase). NOT `Authorization: Bearer`.
@@ -1019,7 +1019,7 @@ cp ../node-inforcer/.github/workflows/ci.yml ../node-inforcer/.github/workflows/
 
 ```bash
 git add -A && git commit -m "docs: README, OSS hygiene, CI workflows"
-gh repo create wyre-technology/node-saas-alerts --private --source=. --remote=origin --push
+gh repo create WYRE-AI/node-saas-alerts --private --source=. --remote=origin --push
 ```
 (Confirm visibility — match the fleet; `node-inforcer` is private. Use `--public` only if the fleet SDKs are public.)
 
